@@ -81,7 +81,7 @@ void main() {
       await insideFakeProjectWithSidekick((dir) async {
         'git init -q ${dir.path} '.run;
         'git -C ${dir.path} add .'.run;
-        'git -C ${dir.path} commit -m "initial"'.run;
+        _gitCommit(dir);
         await dir.file('pubspec.yaml').appendString('\nversion: 1.2.3');
         final runner = initializeSidekick(
           dartSdkPath: fakeDartSdk().path,
@@ -99,7 +99,7 @@ void main() {
         await dir.file('pubspec.yaml').appendString('\nversion: 1.2.3');
         'git init -q ${dir.path} '.run;
         'git -C ${dir.path} add .'.run;
-        'git -C ${dir.path} commit -m "initial"'.run;
+        _gitCommit(dir);
         dir.file('foo').writeAsStringSync('foo');
         'git -C ${dir.path} add foo'.run;
 
@@ -119,7 +119,7 @@ void main() {
         await dir.file('pubspec.yaml').appendString('\nversion: 1.2.3');
         'git init -q ${dir.path} '.run;
         'git -C ${dir.path} add .'.run;
-        'git -C ${dir.path} commit -m "initial"'.run;
+        _gitCommit(dir);
         'git -C ${dir.path} checkout --detach'.run;
 
         final runner = initializeSidekick(
@@ -138,7 +138,7 @@ void main() {
         await dir.file('pubspec.yaml').appendString('\nversion: 1.2.3');
         'git init -q ${dir.path} '.run;
         'git -C ${dir.path} add .'.run;
-        'git -C ${dir.path} commit -m "initial"'.run;
+        _gitCommit(dir);
 
         final runner = initializeSidekick(
           dartSdkPath: fakeDartSdk().path,
@@ -154,4 +154,18 @@ void main() {
       });
     });
   });
+}
+
+void _gitCommit(Directory workingDirectory) {
+  withEnvironment(
+    () => 'git commit -m "initial"'
+        .start(workingDirectory: workingDirectory.path),
+    // without this, `git commit` crashes on CI
+    environment: {
+      'GIT_AUTHOR_NAME': 'Sidekick Test CI',
+      'GIT_AUTHOR_EMAIL': 'sidekick-ci@phntm.xyz',
+      'GIT_COMMITTER_NAME': 'Sidekick Test CI',
+      'GIT_COMMITTER_EMAIL': 'sidekick-ci@phntm.xyz',
+    },
+  );
 }
