@@ -40,10 +40,10 @@ class BumpVersionCommand extends Command {
     final bool bumpPatch = argResults?['patch'] as bool? ?? false;
     final bool commit = argResults?['commit'] as bool? ?? false;
 
-    if (bumpMajor ^
+    if (!(bumpMajor ^
         bumpMinor ^
         bumpPatch ^
-        (bumpMajor && bumpMinor && bumpPatch)) {
+        (bumpMajor && bumpMinor && bumpPatch))) {
       // exactly one bump<version> variable must be true, all others must be false
       error('Bump version with either --major, --minor, or --patch');
     }
@@ -55,12 +55,17 @@ class BumpVersionCommand extends Command {
     );
     final pubspecFile = DartPackage.fromDirectory(packageDirectory)?.pubspec;
 
-    if (pubspecFile == null) {
+    if (pubspecFile == null || !pubspecFile.existsSync()) {
       error('Pubspec.yaml not found');
     }
 
     final pubSpec = PubSpec.fromFile(pubspecFile.path);
-    final version = pubSpec.version!;
+    final version = pubSpec.version;
+
+    if (version == null) {
+      error("Can't bump version because "
+          "${pubspecFile.path} has no current version");
+    }
 
     final oldBuildNumber = version.build.firstOrNull as int?;
     Version newVersion = version;
@@ -100,16 +105,15 @@ class BumpVersionCommand extends Command {
 
     // save to disk
     pubspecFile.replaceFirst(version.toString(), newVersion.toString());
-    print(green(
-        '${mainProject!.name} version bumped from $version to $newVersion'));
+    print(green('${pubSpec.name} version bumped from $version to $newVersion'));
 
     if (commit) {
       if (hasPubspecLocalChanges) {
-        error(
-            "There are local changes in ${relative(pubspecFile.path)}, can't commit version bump");
+        error("There are local changes in ${relative(pubspecFile.path)}, "
+            "can't commit version bump");
       }
       if (areThereStagedFiles) {
-        error('There are stages files, not committing version bump');
+        error('There are staged files, not committing version bump');
       }
       if (isInDetachedHEAD) {
         error('You are in "detached HEAD" state. Not committing version bump');
@@ -131,9 +135,10 @@ extension VersionExtensions on Version {
   static const _defaultParameter = Object();
 
   // copyWith version which handles `null`, as in freezed
-  Version _copyWith(
-      {dynamic preRelease = _defaultParameter,
-      dynamic build = _defaultParameter}) {
+  Version _copyWith({
+    dynamic preRelease = _defaultParameter,
+    dynamic build = _defaultParameter,
+  }) {
     return Version(
       major,
       minor,
