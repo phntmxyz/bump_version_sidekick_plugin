@@ -32,11 +32,15 @@ jobs:
         run: dart test
       - name: Run with latest sidekick from pub
         run: |
-          set -o errexit
+          set -o errexit -o xtrace
+          ls
+          pwd
           dart pub global activate sidekick
           export PATH="$PATH":"$HOME/.pub-cache/bin"
           cd ..
           mkdir tmp
+          ls
+          pwd
           cd tmp
           sidekick init --cliName dashi --projectRoot . --cliPackageDirectory .
           ./dashi -h
