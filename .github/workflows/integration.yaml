@@ -35,9 +35,10 @@ jobs:
           set -o errexit
           dart pub global activate sidekick
           export PATH="$PATH":"$HOME/.pub-cache/bin"
+          cd ..
           mkdir tmp
           cd tmp
           sidekick init --cliName dashi --projectRoot . --cliPackageDirectory .
           ./dashi -h
-          ./dashi sidekick plugins install -s path ..
+          ./dashi sidekick plugins install -s path $HOME
           ./dashi bump-version --major
