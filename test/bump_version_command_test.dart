@@ -1,4 +1,4 @@
-import 'package:phntmxyz_bump_version_sidekick_plugin/bump_version_sidekick_plugin.dart';
+import 'package:phntmxyz_bump_version_sidekick_plugin/phntmxyz_bump_version_sidekick_plugin.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';

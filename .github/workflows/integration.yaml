@@ -42,10 +42,10 @@ jobs:
           cd tmp
           echo 'name: tmp\nversion: 1.2.3' > pubspec.yaml
           
-          # create sidekick CLI for test package and install bump_version_sidekick_plugin
+          # create sidekick CLI for test package and install phntmxyz_bump_version_sidekick_plugin
           sidekick init --cliName dashi --projectRoot . --cliPackageDirectory .
           ./dashi -h
-          ./dashi sidekick plugins install -s path ../bump_version_sidekick_plugin
+          ./dashi sidekick plugins install -s path ../phntmxyz_bump_version_sidekick_plugin
           
           # call bump-version command and check result
           ./dashi bump-version --major .

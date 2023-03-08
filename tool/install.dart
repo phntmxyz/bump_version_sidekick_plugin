@@ -11,7 +11,7 @@ Future<void> main() async {
   registerPlugin(
     sidekickCli: package,
     import:
-        "import 'package:phntmxyz_bump_version_sidekick_plugin/bump_version_sidekick_plugin.dart';",
+        "import 'package:phntmxyz_bump_version_sidekick_plugin/phntmxyz_bump_version_sidekick_plugin.dart';",
     command: 'BumpVersionCommand()',
   );
 }

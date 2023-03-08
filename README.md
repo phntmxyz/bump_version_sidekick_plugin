@@ -1,4 +1,4 @@
-# bump_version_sidekick_plugin sidekick plugin
+# Bump Version sidekick plugin
 
 A plugin for [sidekick CLIs](https://pub.dev/packages/sidekick).  
 
@@ -22,7 +22,7 @@ the [pub tool](https://dart.dev/tools/pub/cmd/pub-global#activating-a-package).
 ### Installing this plugin from pub.dev
 
 ```bash
-your_custom_sidekick_cli sidekick plugins install bump_version_sidekick_plugin
+your_custom_sidekick_cli sidekick plugins install phntmxyz_bump_version_sidekick_plugin
 ```
 
 ## Usage
