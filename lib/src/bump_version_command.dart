@@ -59,7 +59,7 @@ class BumpVersionCommand extends Command {
       error('Pubspec.yaml not found');
     }
 
-    final pubSpec = PubSpec.fromFile(pubspecFile.path);
+    final pubSpec = PubSpec.fromFile(pubspecFile.absolute.path);
     final version = pubSpec.version;
 
     if (version == null) {
