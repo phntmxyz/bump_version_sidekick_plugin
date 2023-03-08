@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -89,7 +90,7 @@ void main() {
     print('dcli exists: ${exists(pubspec.path)}');
 
     runner.addCommand(BumpVersionCommand());
-    await runner.run(['bump-version', '--major']);
+    await runner.run(['bump-version', '--major', pubspec.parent.path]);
     expect(
       PubSpec.fromFile(pubspec.path).version,
       Version(2, 0, 0),
@@ -308,8 +309,22 @@ packages:
   });
 
   Directory cwd = projectRoot;
+
+  final oldZone = Zone.current;
+
   return IOOverrides.runZoned<R>(
     () => callback(projectRoot),
+    fseGetTypeSync: (String path, bool followLinks) {
+      final rawPath = _toStringFromUtf8Array(_toUtf8Array(path));
+
+      print('fseGetTypeSync override');
+      print('path: $path');
+      print('rawPath: $rawPath');
+
+      return oldZone.run(() {
+        return FileSystemEntity.typeSync(rawPath, followLinks: followLinks);
+      });
+    },
     getCurrentDirectory: () => cwd,
     setCurrentDirectory: (dir) => cwd = Directory(dir),
   );
