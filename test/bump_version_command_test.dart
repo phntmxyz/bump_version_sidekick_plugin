@@ -324,7 +324,7 @@ packages:
       print('rawPath.codeUnits: ${rawPath.codeUnits}');
 
       return oldZone.run(() {
-        return FileSystemEntity.typeSync(rawPath, followLinks: followLinks);
+        return FileSystemEntity.typeSync(path, followLinks: followLinks);
       });
     },
     getCurrentDirectory: () => cwd,
