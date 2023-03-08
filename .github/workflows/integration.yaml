@@ -40,5 +40,5 @@ jobs:
           cd tmp
           sidekick init --cliName dashi --projectRoot . --cliPackageDirectory .
           ./dashi -h
-          ./dashi sidekick plugins install -s path bump_version_sidekick_plugin
+          ./dashi sidekick plugins install -s path ../bump_version_sidekick_plugin
           ./dashi bump-version --major
