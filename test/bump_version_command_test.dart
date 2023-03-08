@@ -289,10 +289,11 @@ packages:
   });
 
   Directory cwd = projectRoot;
-  return callback(projectRoot);
   return IOOverrides.runZoned<R>(
     () => callback(projectRoot),
     getCurrentDirectory: () => cwd,
     setCurrentDirectory: (dir) => cwd = Directory(dir),
+    fseGetTypeSync: (String path, bool followLinks) =>
+        FileSystemEntity.typeSync(path, followLinks: followLinks),
   );
 }
