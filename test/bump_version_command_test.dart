@@ -56,8 +56,10 @@ void main() {
 
   // TODO remove
   test('bumps major2', () async {
+    late final SidekickCommandRunner runner;
+    late final File pubspec;
     await insideFakeProjectWithSidekick2((dir) async {
-      final pubspec = dir.file('pubspec.yaml');
+      pubspec = dir.file('pubspec.yaml');
       await pubspec.appendString('\nversion: 1.2.3');
 
       print('Directory.current: ${Directory.current.path}');
@@ -65,16 +67,23 @@ void main() {
       print('pubspec.existsSync(): ${pubspec.existsSync()}');
       print('dcli exists: ${exists(pubspec.path)}');
 
-      final runner = initializeSidekick(
+      runner = initializeSidekick(
         dartSdkPath: fakeDartSdk().path,
       );
-      runner.addCommand(BumpVersionCommand());
-      await runner.run(['bump-version', '--major']);
-      expect(
-        PubSpec.fromFile(dir.file('pubspec.yaml').path).version,
-        Version(2, 0, 0),
-      );
     });
+
+    print('outside insideFakeProjectWithSidekick2');
+    print('Directory.current: ${Directory.current.path}');
+    print('pubspec.path: ${pubspec.path}');
+    print('pubspec.existsSync(): ${pubspec.existsSync()}');
+    print('dcli exists: ${exists(pubspec.path)}');
+
+    runner.addCommand(BumpVersionCommand());
+    await runner.run(['bump-version', '--major']);
+    expect(
+      PubSpec.fromFile(pubspec.path).version,
+      Version(2, 0, 0),
+    );
   });
 
   test('bumps minor', () async {
@@ -293,7 +302,5 @@ packages:
     () => callback(projectRoot),
     getCurrentDirectory: () => cwd,
     setCurrentDirectory: (dir) => cwd = Directory(dir),
-    fseGetTypeSync: (String path, bool followLinks) =>
-        FileSystemEntity.typeSync(path, followLinks: followLinks),
   );
 }
