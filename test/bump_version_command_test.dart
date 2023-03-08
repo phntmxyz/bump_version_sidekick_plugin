@@ -319,7 +319,9 @@ packages:
 
       print('fseGetTypeSync override');
       print('path: $path');
+      print('path.codeUnits: ${path.codeUnits}');
       print('rawPath: $rawPath');
+      print('rawPath.codeUnits: ${rawPath.codeUnits}');
 
       return oldZone.run(() {
         return FileSystemEntity.typeSync(rawPath, followLinks: followLinks);
