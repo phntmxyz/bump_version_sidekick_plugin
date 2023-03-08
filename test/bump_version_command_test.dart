@@ -140,6 +140,11 @@ void main() {
         'git -C ${dir.path} add .'.run;
         _gitCommit(dir);
 
+        // `BumpVersionCommand` calls `git commit` which needs this committer information, else it throws
+        'git config user.email "sidekick-ci@phntm.xyz"'
+            .start(workingDirectory: dir.path);
+        'git config user.name "Sidekick Test CI"'
+            .start(workingDirectory: dir.path);
         final runner = initializeSidekick(
           dartSdkPath: fakeDartSdk().path,
         );
