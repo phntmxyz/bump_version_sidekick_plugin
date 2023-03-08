@@ -15,5 +15,5 @@ dev_dependencies:
     git:
       url: https://github.com/phntmxyz/sidekick
       path: sidekick_test
-      ref: sidekick_core-v1.1.0
+      ref: f244dc3
   test: ^1.20.0
