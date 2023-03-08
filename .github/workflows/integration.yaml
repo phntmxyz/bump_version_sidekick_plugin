@@ -33,12 +33,23 @@ jobs:
       - name: Run with latest sidekick from pub
         run: |
           set -o errexit
+          
+          # install sidekick
           dart pub global activate sidekick
           export PATH="$PATH":"$HOME/.pub-cache/bin"
+          
+          # prepare test package
           cd ..
           mkdir tmp
           cd tmp
+          echo 'name: tmp\nversion: 1.2.3' > pubspec.yaml
+          
+          # create sidekick CLI for test package and install bump_version_sidekick_plugin
           sidekick init --cliName dashi --projectRoot . --cliPackageDirectory .
           ./dashi -h
           ./dashi sidekick plugins install -s path ../bump_version_sidekick_plugin
-          ./dashi bump-version --major
+          
+          # call bump-version command and check result
+          ./dashi bump-version --major .
+          grep -Rq 'version: 2.0.0' pubspec.yaml
+          
