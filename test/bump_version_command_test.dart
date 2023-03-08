@@ -12,7 +12,7 @@ void main() {
       );
       runner.addCommand(BumpVersionCommand());
       expect(
-        () => runner.run(['bump-version', '--major']),
+            () => runner.run(['bump-version', '--major']),
         throwsA('Pubspec.yaml not found'),
       );
     });
@@ -25,7 +25,7 @@ void main() {
       );
       runner.addCommand(BumpVersionCommand());
       expect(
-        () => runner.run(['bump-version', '--major']),
+            () => runner.run(['bump-version', '--major']),
         throwsA(contains('has no current version')),
       );
     });
@@ -33,14 +33,27 @@ void main() {
 
   test('bumps major', () async {
     await insideFakeProjectWithSidekick((dir) async {
-      await dir.file('pubspec.yaml').appendString('\nversion: 1.2.3');
+      final pubspec = dir.file('pubspec.yaml')
+      await
+      pubspec.appendString('\nversion: 1.2.3');
+
+      print('Directory.current: ${Directory.current.path}');
+      print('pubspec.path: ${pubspec.path}');
+      print('pubspec.existsSync(): ${pubspec.existsSync()}');
+      print('dcli exists: ${exists(pubspec.path)}');
+
+
       final runner = initializeSidekick(
         dartSdkPath: fakeDartSdk().path,
       );
       runner.addCommand(BumpVersionCommand());
       await runner.run(['bump-version', '--major']);
       expect(
-        PubSpec.fromFile(dir.file('pubspec.yaml').path).version,
+        PubSpec
+            .fromFile(dir
+            .file('pubspec.yaml')
+            .path)
+            .version,
         Version(2, 0, 0),
       );
     });
@@ -55,7 +68,11 @@ void main() {
       runner.addCommand(BumpVersionCommand());
       await runner.run(['bump-version', '--minor']);
       expect(
-        PubSpec.fromFile(dir.file('pubspec.yaml').path).version,
+        PubSpec
+            .fromFile(dir
+            .file('pubspec.yaml')
+            .path)
+            .version,
         Version(1, 3, 0),
       );
     });
@@ -70,7 +87,11 @@ void main() {
       runner.addCommand(BumpVersionCommand());
       await runner.run(['bump-version', '--patch']);
       expect(
-        PubSpec.fromFile(dir.file('pubspec.yaml').path).version,
+        PubSpec
+            .fromFile(dir
+            .file('pubspec.yaml')
+            .path)
+            .version,
         Version(1, 2, 4),
       );
     });
@@ -88,7 +109,7 @@ void main() {
         );
         runner.addCommand(BumpVersionCommand());
         expect(
-          () => runner.run(['bump-version', '--major', '--commit']),
+              () => runner.run(['bump-version', '--major', '--commit']),
           throwsA(contains('There are local changes')),
         );
       });
@@ -108,7 +129,7 @@ void main() {
         );
         runner.addCommand(BumpVersionCommand());
         expect(
-          () => runner.run(['bump-version', '--major', '--commit']),
+              () => runner.run(['bump-version', '--major', '--commit']),
           throwsA(contains('There are staged files')),
         );
       });
@@ -127,7 +148,7 @@ void main() {
         );
         runner.addCommand(BumpVersionCommand());
         expect(
-          () => runner.run(['bump-version', '--major', '--commit']),
+              () => runner.run(['bump-version', '--major', '--commit']),
           throwsA(contains('You are in "detached HEAD" state')),
         );
       });
@@ -163,8 +184,9 @@ void main() {
 
 void _gitCommit(Directory workingDirectory) {
   withEnvironment(
-    () => 'git commit -m "initial"'
-        .start(workingDirectory: workingDirectory.path),
+        () =>
+        'git commit -m "initial"'
+            .start(workingDirectory: workingDirectory.path),
     // without this, `git commit` crashes on CI
     environment: {
       'GIT_AUTHOR_NAME': 'Sidekick Test CI',
