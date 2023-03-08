@@ -1,6 +1,6 @@
-name: bump_version_sidekick_plugin
+name: phntmxyz_bump_version_sidekick_plugin
 description: Generated sidekick plugin (template shared-command)
-version: 0.0.1
+version: 1.0.0
 
 environment:
   sdk: '>=2.14.0 <3.0.0'

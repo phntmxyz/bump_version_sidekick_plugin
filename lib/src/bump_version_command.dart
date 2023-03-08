@@ -126,7 +126,7 @@ class BumpVersionCommand extends Command {
   }
 }
 
-extension VersionExtensions on Version {
+extension on Version {
   /// Creates a copy of [Version], optionally changing [preRelease] and [build]
   Version Function({String? preRelease, String? build}) get copyWith =>
       _copyWith;
