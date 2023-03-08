@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:bump_version_sidekick_plugin/bump_version_sidekick_plugin.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_test/sidekick_test.dart';
@@ -66,6 +69,13 @@ void main() {
       print('pubspec.path: ${pubspec.path}');
       print('pubspec.existsSync(): ${pubspec.existsSync()}');
       print('dcli exists: ${exists(pubspec.path)}');
+
+      final pathToUtf8Array = _toUtf8Array(pubspec.path);
+      print('pathToUtf8Array: $pathToUtf8Array');
+      final pathToStringFromUtf8Array = _toStringFromUtf8Array(pathToUtf8Array);
+      print('pathToStringFromUtf8Array: $pathToStringFromUtf8Array');
+      final rawPath = utf8.encoder.convert(pathToStringFromUtf8Array);
+      print('rawPath: $rawPath');
 
       runner = initializeSidekick(
         dartSdkPath: fakeDartSdk().path,
@@ -303,4 +313,26 @@ packages:
     getCurrentDirectory: () => cwd,
     setCurrentDirectory: (dir) => cwd = Directory(dir),
   );
+}
+
+String _toStringFromUtf8Array(Uint8List l) {
+  Uint8List nonNullTerminated = l;
+  if (l.last == 0) {
+    nonNullTerminated =
+        new Uint8List.view(l.buffer, l.offsetInBytes, l.length - 1);
+  }
+  return utf8.decode(nonNullTerminated, allowMalformed: true);
+}
+
+Uint8List _toUtf8Array(String s) =>
+    _toNullTerminatedUtf8Array(utf8.encoder.convert(s));
+
+Uint8List _toNullTerminatedUtf8Array(Uint8List l) {
+  if (l.isEmpty || (l.isNotEmpty && l.last != 0)) {
+    final tmp = new Uint8List(l.length + 1);
+    tmp.setRange(0, l.length, l);
+    return tmp;
+  } else {
+    return l;
+  }
 }
