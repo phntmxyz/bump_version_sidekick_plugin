@@ -49,7 +49,8 @@ class BumpVersionCommand extends Command {
     );
     final package = DartPackage.fromDirectory(packageDirectory);
     if (package == null) {
-      error("No Dart package found in ${packageDirectory.path}");
+      error("No Dart package with pubspec.yaml found "
+          "in ${packageDirectory.path}");
     }
     final pubspecFile = package.pubspec;
 
