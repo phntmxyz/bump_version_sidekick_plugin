@@ -1,6 +1,5 @@
-import 'package:phntmxyz_bump_version_sidekick_plugin/src/bump_version.dart';
+import 'package:phntmxyz_bump_version_sidekick_plugin/phntmxyz_bump_version_sidekick_plugin.dart';
 import 'package:phntmxyz_bump_version_sidekick_plugin/src/git_file_committer.dart';
-import 'package:phntmxyz_bump_version_sidekick_plugin/src/pubspec_version.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 class BumpVersionCommand extends Command {
