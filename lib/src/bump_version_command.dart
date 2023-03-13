@@ -1,3 +1,6 @@
+import 'package:phntmxyz_bump_version_sidekick_plugin/src/bump_version.dart';
+import 'package:phntmxyz_bump_version_sidekick_plugin/src/git_file_comitter.dart';
+import 'package:phntmxyz_bump_version_sidekick_plugin/src/pubspec_version.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 class BumpVersionCommand extends Command {
@@ -35,10 +38,54 @@ class BumpVersionCommand extends Command {
 
   @override
   Future<void> run() async {
-    final bool bumpMajor = argResults?['major'] as bool? ?? false;
-    final bool bumpMinor = argResults?['minor'] as bool? ?? false;
-    final bool bumpPatch = argResults?['patch'] as bool? ?? false;
+    // Parse arguments
     final bool commit = argResults?['commit'] as bool? ?? false;
+    final bumpType = argResults!.parseBumpType();
+
+    final packageDirectory = Directory(
+      argResults?.rest.firstOrNull ??
+          mainProject?.root.path ??
+          Directory.current.path,
+    );
+    final package = DartPackage.fromDirectory(packageDirectory);
+    if (package == null) {
+      error("No Dart package found in ${packageDirectory.path}");
+    }
+    final pubspecFile = package.pubspec;
+
+    // Read current version
+    final Version? currentVersion = readPubspecVersion(pubspecFile);
+    if (currentVersion == null) {
+      error("Can't bump version because "
+          "${pubspecFile.path} has no current version");
+    }
+
+    // Bump version
+    final Version bumpedVersion = currentVersion.bumpVersion(bumpType);
+
+    final fileCommitter = GitFileCommitter(pubspecFile);
+    if (commit) {
+      fileCommitter.captureFileStatus();
+    }
+
+    // Save to pubspec.yaml
+    setPubspecVersion(pubspecFile, bumpedVersion);
+    print(
+      green('${package.name} version bumped '
+          'from $currentVersion to $bumpedVersion'),
+    );
+
+    if (commit) {
+      fileCommitter.commit('Bump version to $bumpedVersion');
+    }
+  }
+}
+
+extension on ArgResults {
+  VersionBumpType parseBumpType() {
+    final bool bumpMajor = this['major'] as bool? ?? false;
+    final bool bumpMinor = this['minor'] as bool? ?? false;
+    final bool bumpPatch = this['patch'] as bool? ?? false;
 
     if (!(bumpMajor ^
         bumpMinor ^
@@ -48,119 +95,9 @@ class BumpVersionCommand extends Command {
       error('Bump version with either --major, --minor, or --patch');
     }
 
-    final packageDirectory = Directory(
-      argResults?.rest.firstOrNull ??
-          mainProject?.root.path ??
-          Directory.current.path,
-    );
-    final pubspecFile = DartPackage.fromDirectory(packageDirectory)?.pubspec;
-
-    if (pubspecFile == null || !pubspecFile.existsSync()) {
-      error('Pubspec.yaml not found');
-    }
-
-    final pubSpec = PubSpec.fromFile(pubspecFile.absolute.path);
-    final version = pubSpec.version;
-
-    if (version == null) {
-      error("Can't bump version because "
-          "${pubspecFile.path} has no current version");
-    }
-
-    final oldBuildNumber = version.build.firstOrNull as int?;
-    Version newVersion = version;
-    if (bumpMajor) {
-      newVersion = version.nextMajor;
-    }
-    if (bumpMinor) {
-      newVersion = version.nextMinor;
-    }
-    if (bumpPatch) {
-      newVersion = version.nextPatch;
-    }
-
-    if (oldBuildNumber != null) {
-      final newBuildNumber = oldBuildNumber + 1;
-      // build is immutable and null if not present
-      newVersion = newVersion.copyWith(build: newBuildNumber.toString());
-    }
-
-    bool hasPubspecLocalChanges = false;
-    bool areThereStagedFiles = false;
-    bool isInDetachedHEAD = false;
-    if (commit) {
-      final pubspecDiff =
-          'git diff HEAD --exit-code --quiet ${pubspecFile.absolute.path}'
-              .start(nothrow: true);
-      hasPubspecLocalChanges = pubspecDiff.exitCode != 0;
-
-      final allFilesDiff =
-          'git diff --cached --quiet --exit-code'.start(nothrow: true);
-      areThereStagedFiles = allFilesDiff.exitCode != 0;
-
-      final detachedHEAD = 'git symbolic-ref -q HEAD'
-          .start(progress: Progress.printStdErr(), nothrow: true);
-      isInDetachedHEAD = detachedHEAD.exitCode != 0;
-    }
-
-    // save to disk
-    pubspecFile.replaceFirst(version.toString(), newVersion.toString());
-    print(green('${pubSpec.name} version bumped from $version to $newVersion'));
-
-    if (commit) {
-      if (hasPubspecLocalChanges) {
-        error("There are local changes in ${relative(pubspecFile.path)}, "
-            "can't commit version bump");
-      }
-      if (areThereStagedFiles) {
-        error('There are staged files, not committing version bump');
-      }
-      if (isInDetachedHEAD) {
-        error('You are in "detached HEAD" state. Not committing version bump');
-      }
-      'git add ${pubspecFile.path}'.start(progress: Progress.printStdErr());
-      'git commit -m "Bump version to $newVersion" --no-verify'
-          .start(progress: Progress.printStdErr());
-      'git --no-pager log -n1 --oneline'.run;
-    }
-  }
-}
-
-extension on Version {
-  /// Creates a copy of [Version], optionally changing [preRelease] and [build]
-  Version Function({String? preRelease, String? build}) get copyWith =>
-      _copyWith;
-
-  /// Makes it distinguishable if users used `null` or did not provide any value
-  static const _defaultParameter = Object();
-
-  // copyWith version which handles `null`, as in freezed
-  Version _copyWith({
-    dynamic preRelease = _defaultParameter,
-    dynamic build = _defaultParameter,
-  }) {
-    return Version(
-      major,
-      minor,
-      patch,
-      pre: () {
-        if (preRelease == _defaultParameter) {
-          if (this.preRelease.isEmpty) {
-            return null;
-          }
-          return this.preRelease.join('.');
-        }
-        return preRelease as String?;
-      }(),
-      build: () {
-        if (build == _defaultParameter) {
-          if (this.build.isEmpty) {
-            return null;
-          }
-          return this.build.join('.');
-        }
-        return build as String?;
-      }(),
-    );
+    if (bumpMajor) return VersionBumpType.major;
+    if (bumpMinor) return VersionBumpType.minor;
+    if (bumpPatch) return VersionBumpType.patch;
+    throw 'No bump type selected';
   }
 }
