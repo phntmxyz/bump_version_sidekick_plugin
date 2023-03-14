@@ -3,26 +3,28 @@ import 'package:sidekick_core/sidekick_core.dart';
 extension BumpVersion on Version {
   /// Returns a bumped [Version], major, minor or patch
   ///
-  /// Always bumps buildNumber when set by 1
+  /// Always strips the pre-release identifiers.
+  /// If the build information contains a single number, it is incremented.
   Version bumpVersion(VersionBumpType bumpType) {
-    final oldBuildNumber = build.firstOrNull as int?;
-    Version newVersion = this;
-    switch (bumpType) {
-      case VersionBumpType.major:
-        newVersion = nextMajor;
-        break;
-      case VersionBumpType.minor:
-        newVersion = nextMinor;
-        break;
-      case VersionBumpType.patch:
-        newVersion = nextPatch;
-        break;
-    }
+    Version newVersion = () {
+      switch (bumpType) {
+        case VersionBumpType.major:
+          return nextMajor;
+        case VersionBumpType.minor:
+          return nextMinor;
+        case VersionBumpType.patch:
+          return nextPatch;
+      }
+    }();
 
-    if (oldBuildNumber != null) {
-      final newBuildNumber = oldBuildNumber + 1;
-      // build is immutable and null if not present
-      newVersion = newVersion.copyWith(build: newBuildNumber.toString());
+    // bump of build information is only safe when it contains a single number,
+    // otherwise we don't know its incrementation schema and we leave it as is
+    if (build.whereType<int>().length == 1) {
+      final newBuild = build.map((e) => e is int ? e + 1 : e).join('.');
+      newVersion = newVersion.copyWith(build: newBuild);
+    } else {
+      newVersion =
+          newVersion.copyWith(build: build.isNotEmpty ? build.join('.') : null);
     }
 
     return newVersion;

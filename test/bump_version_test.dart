@@ -69,4 +69,22 @@ void main() {
       Version(1, 2, 3),
     );
   });
+
+  test('bump build number only when it is safe', () {
+    expect(
+      Version(1, 2, 3, build: '2').bumpVersion(VersionBumpType.patch),
+      Version(1, 2, 4, build: '3'),
+    );
+
+    expect(
+      Version(1, 2, 3, build: 'foo.42.bar').bumpVersion(VersionBumpType.patch),
+      Version(1, 2, 4, build: 'foo.43.bar'),
+    );
+
+    expect(
+      Version(1, 2, 3, build: 'foo.19.89.bar')
+          .bumpVersion(VersionBumpType.patch),
+      Version(1, 2, 4, build: 'foo.19.89.bar'),
+    );
+  });
 }
