@@ -13,7 +13,7 @@ void main() {
       runner.addCommand(BumpVersionCommand());
       expect(
         () => runner.run(['bump-version', '--major']),
-        throwsA('Pubspec.yaml not found'),
+        throwsA(contains('No Dart package with pubspec.yaml found')),
       );
     });
   });

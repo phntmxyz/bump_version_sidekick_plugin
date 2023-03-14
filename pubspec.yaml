@@ -9,6 +9,7 @@ environment:
 
 dependencies:
   sidekick_core: ^1.0.0
+  yaml_edit: ^2.1.0
 
 dev_dependencies:
   lint: ^1.5.0
