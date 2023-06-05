@@ -165,7 +165,7 @@ void main() {
 
 void _gitCommit(Directory workingDirectory) {
   withEnvironment(
-    () => 'git commit -m "initial"'
+    () async => 'git commit -m "initial"'
         .start(workingDirectory: workingDirectory.path),
     // without this, `git commit` crashes on CI
     environment: {
