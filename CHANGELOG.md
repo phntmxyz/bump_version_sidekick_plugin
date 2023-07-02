@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.1
+- Add topics to `pubspec.yaml`
+
 ## 1.1.0
 - Update to Dart 3
 - Only bump when safe (and `Version.build` contains a number) #2
