@@ -4,10 +4,9 @@ A plugin for [sidekick CLIs](https://pub.dev/packages/sidekick).
 
 ## Description
 
-Bumps the version of a package.  
-
-Take a look at the available [sidekick plugins on pub.dev](https://pub.dev/packages?q=dependency%3Asidekick_core).
-
+- Bumps the version of a package (major, minor, patch)
+- Optionally commits the version bump
+- modification API to adjust other files (e.g. `CHANGELOG.md`)
 
 ## Installation
 
@@ -39,6 +38,25 @@ One of `--minor`, `--patch`, `--major` is required. This controls how the versio
 E.g. current version is `1.2.3`, `--minor` is selected -> updates to `1.3.0`.  
 
 If `--commit` is given, the version bump is automatically committed.
+
+## Modification API
+
+```dart
+runner..addCommand(BumpVersionCommand()..addModification(bumpChangelog));
+```
+
+```dart
+void bumpChangelog(
+    DartPackage package, Version oldVersion, Version newVersion) {
+
+  final versionFile = package.root.file('CHANGELOG.md');
+  final content = versionFile.readAsStringSync();
+
+  // TODO replace the version
+  
+  versionFile.writeAsStringSync(newContent);
+}
+```
 
 ## License
 

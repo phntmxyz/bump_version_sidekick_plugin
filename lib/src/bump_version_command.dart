@@ -33,6 +33,13 @@ class BumpVersionCommand extends Command {
       help:
           'Automatically commits the version bump. Precondition, no local changes in pubspec.yaml',
     );
+    addModification(bumpPubspecVersion);
+  }
+
+  final List<FileModification> _modifications = [];
+
+  void addModification(FileModification modification) {
+    _modifications.add(modification);
   }
 
   @override
@@ -63,20 +70,93 @@ class BumpVersionCommand extends Command {
     // Bump version
     final Version bumpedVersion = currentVersion.bumpVersion(bumpType);
 
-    final fileCommitter = GitFileCommitter(pubspecFile);
-    if (commit) {
-      fileCommitter.captureFileStatus();
+    void applyModifications() {
+      for (final modification in _modifications) {
+        modification.call(package, version, bumpedVersion);
+      }
     }
 
-    // Save to pubspec.yaml
-    setPubspecVersion(pubspecFile, bumpedVersion);
-    print(
-      green('${package.name} version bumped '
-          'from $currentVersion to $bumpedVersion'),
-    );
-
+    bool bumped = false;
     if (commit) {
-      fileCommitter.commit('Bump version to $bumpedVersion');
+      final detachedHEAD = 'git symbolic-ref -q HEAD'
+          .start(progress: Progress.printStdErr(), nothrow: true);
+      if (detachedHEAD.exitCode != 0) {
+        throw 'You are in "detached HEAD" state, can not commit version bump';
+      } else {
+        commitFileModifications(
+          applyModifications,
+          commitMessage: 'Bump version to $bumpedVersion',
+        );
+        bumped = true;
+      }
+    }
+    if (!bumped) {
+      applyModifications();
+    }
+
+    print(
+      green(
+        '${package.name} version bumped '
+        'from $currentVersion to $bumpedVersion',
+      ),
+    );
+  }
+
+  /// Updates the version in pubspec.yaml
+  void bumpPubspecVersion(
+    DartPackage package,
+    Version oldVersion,
+    Version newVersion,
+  ) {
+    setPubspecVersion(package.pubspec, newVersion);
+  }
+}
+
+typedef FileModification = void Function(
+  DartPackage package,
+  Version oldVersion,
+  Version newVersion,
+);
+
+/// Commits only the file changes that have been done in [block]
+void commitFileModifications(
+  void Function() block, {
+  required String commitMessage,
+}) {
+  final stashName = 'pre-bump-${DateTime.now().toIso8601String()}';
+
+  // stash changes
+  'git stash save --include-untracked "$stashName"'
+      .start(progress: Progress.printStdErr());
+
+  try {
+    // apply modifications
+    block();
+
+    // commit
+    'git add -A'.start(progress: Progress.printStdErr());
+    'git commit -m "$commitMessage" --no-verify'
+        .start(progress: Progress.printStdErr());
+    'git --no-pager log -n1 --oneline'.run;
+  } catch (e) {
+    printerr('Detected error, discarding modifications');
+    // discard all modifications
+    'git reset --hard'.start(progress: Progress.printStdErr());
+    rethrow;
+  } finally {
+    final stashes = 'git stash list'.start(progress: Progress.capture()).lines;
+    final stash = stashes.firstOrNullWhere((line) => line.contains(stashName));
+    if (stash != null) {
+      final stashId = RegExp(r'stash@{(\d+)}').firstMatch(stash)?.group(1);
+      // restore changes
+      'git merge --squash --strategy-option=theirs stash@{$stashId}'
+          .start(progress: Progress.print());
+      try {
+        // apply modifications again to make sure the stash did not overwrite already made changes
+        block();
+      } catch (e) {
+        // ignore
+      }
     }
   }
 }
