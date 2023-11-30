@@ -81,7 +81,6 @@ void main() {
   group('commit', () {
     test('works when pubspec has local changes', () async {
       await insideFakeProjectWithSidekick((dir) async {
-        print(dir);
         'git init -q ${dir.path} '.run;
         'git -C ${dir.path} add .'.run;
         await dir.file('pubspec.yaml').appendString('\nversion: 1.2.3');
