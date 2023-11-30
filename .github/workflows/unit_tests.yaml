@@ -23,4 +23,7 @@ jobs:
       - name: Install dependencies
         run: dart pub get
       - name: Run tests
-        run: dart test
+        run: |
+          git config --global user.email "dash@flutter.dev"
+          git config --global user.name "Dash"
+          dart test

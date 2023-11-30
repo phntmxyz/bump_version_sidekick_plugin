@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.0
+- Add modification API `BumpVersionCommand.addModification(...)` #5
+
 ## 1.1.1
 - Add topics to `pubspec.yaml`
 

@@ -79,40 +79,51 @@ void main() {
   });
 
   group('commit', () {
-    test('throws when pubspec has local changes', () async {
+    test('works when pubspec has local changes', () async {
       await insideFakeProjectWithSidekick((dir) async {
         'git init -q ${dir.path} '.run;
         'git -C ${dir.path} add .'.run;
-        _gitCommit(dir);
         await dir.file('pubspec.yaml').appendString('\nversion: 1.2.3');
+        _gitCommit(dir);
+        // local change
+        await dir.file('pubspec.yaml').appendString('\n\n#comment');
         final runner = initializeSidekick(
           dartSdkPath: fakeDartSdk().path,
         );
         runner.addCommand(BumpVersionCommand());
+        await runner.run(['bump-version', '--major', '--commit']);
+
+        final lastCommitMessage = 'git -C ${dir.path} show -s --format=%s'
+            .start(progress: Progress.capture(), nothrow: true)
+            .lines
+            .first;
+        expect(lastCommitMessage, contains('Bump version to 2.0.0'));
         expect(
-          () => runner.run(['bump-version', '--major', '--commit']),
-          throwsA(contains('There are local changes')),
+          dir.file('pubspec.yaml').readAsStringSync(),
+          contains('#comment'),
+        );
+        expect(
+          dir.file('pubspec.yaml').readAsStringSync(),
+          contains('version: 2.0.0'),
         );
       });
     });
 
-    test('throws when there are staged files', () async {
+    test('staged files are restored', () async {
       await insideFakeProjectWithSidekick((dir) async {
         await dir.file('pubspec.yaml').appendString('\nversion: 1.2.3');
         'git init -q ${dir.path} '.run;
         'git -C ${dir.path} add .'.run;
         _gitCommit(dir);
-        dir.file('foo').writeAsStringSync('foo');
+        final fooFile = dir.file('foo')..writeAsStringSync('foo');
         'git -C ${dir.path} add foo'.run;
 
         final runner = initializeSidekick(
           dartSdkPath: fakeDartSdk().path,
         );
         runner.addCommand(BumpVersionCommand());
-        expect(
-          () => runner.run(['bump-version', '--major', '--commit']),
-          throwsA(contains('There are staged files')),
-        );
+        expect(fooFile.existsSync(), isTrue);
+        expect(fooFile.readAsStringSync(), 'foo');
       });
     });
 
