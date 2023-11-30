@@ -46,15 +46,13 @@ runner..addCommand(BumpVersionCommand()..addModification(bumpChangelog));
 ```
 
 ```dart
-void bumpChangelog(
-    DartPackage package, Version oldVersion, Version newVersion) {
+Future<void> bumpChangelog(DartPackage package, Version oldVersion, Version newVersion) async {
+  final readme = package.root.file('README.md');
+  final content = readme.readAsStringSync();
 
-  final versionFile = package.root.file('CHANGELOG.md');
-  final content = versionFile.readAsStringSync();
-
-  // TODO replace the version
-  
-  versionFile.writeAsStringSync(newContent);
+  final versionRegex = RegExp(r'my_package: \^(.+)');
+  final update = content.replaceFirst(versionRegex, 'my_package: ^${newVersion.canonicalizedVersion}');
+  readme.writeAsStringSync(update);
 }
 ```
 

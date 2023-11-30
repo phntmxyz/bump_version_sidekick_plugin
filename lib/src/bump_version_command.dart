@@ -1,5 +1,6 @@
+import 'dart:async';
+
 import 'package:phntmxyz_bump_version_sidekick_plugin/phntmxyz_bump_version_sidekick_plugin.dart';
-import 'package:phntmxyz_bump_version_sidekick_plugin/src/git_file_committer.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 class BumpVersionCommand extends Command {
@@ -70,9 +71,9 @@ class BumpVersionCommand extends Command {
     // Bump version
     final Version bumpedVersion = currentVersion.bumpVersion(bumpType);
 
-    void applyModifications() {
+    Future<void> applyModifications() async {
       for (final modification in _modifications) {
-        modification.call(package, version, bumpedVersion);
+        await modification.call(package, version, bumpedVersion);
       }
     }
 
@@ -83,7 +84,7 @@ class BumpVersionCommand extends Command {
       if (detachedHEAD.exitCode != 0) {
         throw 'You are in "detached HEAD" state, can not commit version bump';
       } else {
-        commitFileModifications(
+        await commitFileModifications(
           applyModifications,
           commitMessage: 'Bump version to $bumpedVersion',
         );
@@ -91,7 +92,7 @@ class BumpVersionCommand extends Command {
       }
     }
     if (!bumped) {
-      applyModifications();
+      await applyModifications();
     }
 
     print(
@@ -112,17 +113,17 @@ class BumpVersionCommand extends Command {
   }
 }
 
-typedef FileModification = void Function(
+typedef FileModification = FutureOr<void> Function(
   DartPackage package,
   Version oldVersion,
   Version newVersion,
 );
 
 /// Commits only the file changes that have been done in [block]
-void commitFileModifications(
-  void Function() block, {
+Future<void> commitFileModifications(
+  FutureOr<void> Function() block, {
   required String commitMessage,
-}) {
+}) async {
   final stashName = 'pre-bump-${DateTime.now().toIso8601String()}';
 
   // stash changes
@@ -131,7 +132,7 @@ void commitFileModifications(
 
   try {
     // apply modifications
-    block();
+    await block();
 
     // commit
     'git add -A'.start(progress: Progress.printStdErr());
@@ -153,7 +154,7 @@ void commitFileModifications(
           .start(progress: Progress.print());
       try {
         // apply modifications again to make sure the stash did not overwrite already made changes
-        block();
+        await block();
       } catch (e) {
         // ignore
       }

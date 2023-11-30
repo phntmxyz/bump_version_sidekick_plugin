@@ -92,7 +92,7 @@ void main() {
           dartSdkPath: fakeDartSdk().path,
         );
         runner.addCommand(BumpVersionCommand());
-        runner.run(['bump-version', '--major', '--commit']);
+        await runner.run(['bump-version', '--major', '--commit']);
 
         final lastCommitMessage = 'git -C ${dir.path} show -s --format=%s'
             .start(progress: Progress.capture(), nothrow: true)
