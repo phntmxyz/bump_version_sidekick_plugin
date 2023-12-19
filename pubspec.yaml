@@ -1,6 +1,6 @@
 name: phntmxyz_bump_version_sidekick_plugin
 description: Generated sidekick plugin (template shared-command)
-version: 1.2.0
+version: 1.2.1
 repository: https://github.com/phntmxyz/bump_version_sidekick_plugin
 issue_tracker: https://github.com/phntmxyz/bump_version_sidekick_plugin/issues
 topics:

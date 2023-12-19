@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.1
+- Fix `oldVersion` parameter of modifications
+
 ## 1.2.0
 - Add modification API `BumpVersionCommand.addModification(...)` #5
 
