@@ -70,4 +70,36 @@ dependencies:
       expect(readme.readAsStringSync(), contains('my_package: ^1.3.0'));
     });
   });
+
+  test('modification receives correct versions', () async {
+    await insideFakeProjectWithSidekick((dir) async {
+      await dir.file('pubspec.yaml').appendString('\nversion: 1.2.3');
+      final readme = dir.file('README.md');
+      readme.writeAsStringSync('''
+# Package
+
+```yaml
+dependencies:
+  my_package: ^1.2.3
+```
+      ''');
+      final runner = initializeSidekick(
+        dartSdkPath: fakeDartSdk().path,
+      );
+
+      Version? oldVersion;
+      Version? newVersion;
+      runner.addCommand(
+        BumpVersionCommand()
+          ..addModification((package, oldV, newV) {
+            oldVersion = oldV;
+            newVersion = newV;
+          }),
+      );
+      await runner.run(['bump-version', '--minor']);
+
+      expect(oldVersion, Version(1, 2, 3));
+      expect(newVersion, Version(1, 3, 0));
+    });
+  });
 }

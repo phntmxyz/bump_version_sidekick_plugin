@@ -73,7 +73,7 @@ class BumpVersionCommand extends Command {
 
     Future<void> applyModifications() async {
       for (final modification in _modifications) {
-        await modification.call(package, version, bumpedVersion);
+        await modification.call(package, currentVersion, bumpedVersion);
       }
     }
 
