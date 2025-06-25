@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         # Always keep support to at least 2 stable versions
-        version: [ "3.8.0", "latest" ]
+        version: [ "3.5.0", "latest" ]
 
     container:
       image: dart:${{ matrix.version }}

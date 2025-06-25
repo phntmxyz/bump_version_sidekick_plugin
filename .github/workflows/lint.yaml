@@ -13,7 +13,7 @@ jobs:
       image: dart:3.5.0
 
     steps:
-      - uses: actions/checkout@v4    
+      - uses: actions/checkout@v4
 
       - name: Install pub packages
         run: dart pub get
