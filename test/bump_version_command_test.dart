@@ -1,11 +1,13 @@
 import 'package:phntmxyz_bump_version_sidekick_plugin/phntmxyz_bump_version_sidekick_plugin.dart';
+import 'package:pubspec_manager/pubspec_manager.dart' as pubspec_manager;
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
 void main() {
+  // ignore: unnecessary_async
   test('throws when pubspec does not exist', () async {
-    await insideFakeProjectWithSidekick((dir) async {
+    insideFakeProjectWithSidekick((dir) {
       dir.file('pubspec.yaml').deleteSync();
       final runner = initializeSidekick(
         dartSdkPath: fakeDartSdk().path,
@@ -19,6 +21,7 @@ void main() {
   });
 
   test('throws when pubspec has no version', () async {
+    // ignore: unnecessary_async
     await insideFakeProjectWithSidekick((dir) async {
       final runner = initializeSidekick(
         dartSdkPath: fakeDartSdk().path,
@@ -42,8 +45,8 @@ void main() {
       runner.addCommand(BumpVersionCommand());
       await runner.run(['bump-version', '--major']);
       expect(
-        PubSpec.fromFile(dir.file('pubspec.yaml').path).version,
-        Version(2, 0, 0),
+        pubspec_manager.PubSpec.loadFromPath(dir.file('pubspec.yaml').path).version.toString(),
+        '2.0.0',
       );
     });
   });
@@ -57,8 +60,8 @@ void main() {
       runner.addCommand(BumpVersionCommand());
       await runner.run(['bump-version', '--minor']);
       expect(
-        PubSpec.fromFile(dir.file('pubspec.yaml').path).version,
-        Version(1, 3, 0),
+        pubspec_manager.PubSpec.loadFromPath(dir.file('pubspec.yaml').path).version.toString(),
+        '1.3.0',
       );
     });
   });
@@ -72,8 +75,8 @@ void main() {
       runner.addCommand(BumpVersionCommand());
       await runner.run(['bump-version', '--patch']);
       expect(
-        PubSpec.fromFile(dir.file('pubspec.yaml').path).version,
-        Version(1, 2, 4),
+        pubspec_manager.PubSpec.loadFromPath(dir.file('pubspec.yaml').path).version.toString(),
+        '1.2.4',
       );
     });
   });
@@ -93,10 +96,8 @@ void main() {
         runner.addCommand(BumpVersionCommand());
         await runner.run(['bump-version', '--major', '--commit']);
 
-        final lastCommitMessage = 'git -C ${dir.path} show -s --format=%s'
-            .start(progress: Progress.capture(), nothrow: true)
-            .lines
-            .first;
+        final lastCommitMessage =
+            'git -C ${dir.path} show -s --format=%s'.start(progress: Progress.capture(), nothrow: true).lines.first;
         expect(lastCommitMessage, contains('Bump version to 2.0.0'));
         expect(
           dir.file('pubspec.yaml').readAsStringSync(),
@@ -154,20 +155,16 @@ void main() {
         _gitCommit(dir);
 
         // `BumpVersionCommand` calls `git commit` which needs this committer information, else it throws
-        'git config user.email "sidekick-ci@phntm.xyz"'
-            .start(workingDirectory: dir.path);
-        'git config user.name "Sidekick Test CI"'
-            .start(workingDirectory: dir.path);
+        'git config user.email "sidekick-ci@phntm.xyz"'.start(workingDirectory: dir.path);
+        'git config user.name "Sidekick Test CI"'.start(workingDirectory: dir.path);
         final runner = initializeSidekick(
           dartSdkPath: fakeDartSdk().path,
         );
         runner.addCommand(BumpVersionCommand());
         await runner.run(['bump-version', '--major', '--commit']);
 
-        final lastCommitMessage = 'git -C ${dir.path} show -s --format=%s'
-            .start(progress: Progress.capture(), nothrow: true)
-            .lines
-            .first;
+        final lastCommitMessage =
+            'git -C ${dir.path} show -s --format=%s'.start(progress: Progress.capture(), nothrow: true).lines.first;
         expect(lastCommitMessage, contains('Bump version to 2.0.0'));
       });
     });
@@ -175,15 +172,9 @@ void main() {
 }
 
 void _gitCommit(Directory workingDirectory) {
-  withEnvironment(
-    () async => 'git commit -m "initial"'
-        .start(workingDirectory: workingDirectory.path),
-    // without this, `git commit` crashes on CI
-    environment: {
-      'GIT_AUTHOR_NAME': 'Sidekick Test CI',
-      'GIT_AUTHOR_EMAIL': 'sidekick-ci@phntm.xyz',
-      'GIT_COMMITTER_NAME': 'Sidekick Test CI',
-      'GIT_COMMITTER_EMAIL': 'sidekick-ci@phntm.xyz',
-    },
-  );
+  // Set git configuration for this test to avoid CI failures
+  'git config user.email "sidekick-ci@phntm.xyz"'.start(workingDirectory: workingDirectory.path);
+  'git config user.name "Sidekick Test CI"'.start(workingDirectory: workingDirectory.path);
+
+  'git commit -m "initial"'.start(workingDirectory: workingDirectory.path);
 }
