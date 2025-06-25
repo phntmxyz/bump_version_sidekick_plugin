@@ -9,18 +9,18 @@ topics:
   - sidekick-plugin
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.5.0 <4.0.0'
 
 dependencies:
-  sidekick_core: ^2.0.0
+  pubspec_manager: ^1.0.2
+  sidekick_core: ^3.0.0
   yaml_edit: ^2.1.0
 
 dev_dependencies:
   lint: ^2.0.0
-  sidekick_plugin_installer: ^1.1.0
+  sidekick_plugin_installer: ^2.0.0
   sidekick_test:
     git:
       url: https://github.com/phntmxyz/sidekick
       path: sidekick_test
-      ref: ea5093cff4eee04f6a4827d66ceb0de87afc5285
   test: ^1.20.0

@@ -2,19 +2,20 @@ name: Dart Format
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
 
 jobs:
   format:
     runs-on: ubuntu-latest
-
     container:
-      image: dart:3.0.2
+      image: dart:3.5.0
 
     steps:
-      - uses: actions/checkout@v1
-      - name: check formatting
-        run: |
-          dart format --fix --output none --set-exit-if-changed .
+      - uses: actions/checkout@v4    
+
+      - name: Install pub packages
+        run: dart pub get
+
+      - name: Check formatting
+        run: dart format --output none --set-exit-if-changed .
