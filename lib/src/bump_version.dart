@@ -17,8 +17,8 @@ extension BumpVersion on Version {
       }
     }();
 
-// bump of build information is only safe when it contains a single number,
-// otherwise we don't know its incrementation schema and we leave it as is
+    // bump of build information is only safe when it contains a single number,
+    // otherwise we don't know its incrementation schema and we leave it as is
     if (build.whereType<int>().length == 1) {
       final newBuild = build.map((e) => e is int ? e + 1 : e).join('.');
       newVersion = newVersion.copyWith(build: newBuild);
