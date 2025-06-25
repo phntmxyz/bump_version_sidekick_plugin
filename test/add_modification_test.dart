@@ -1,6 +1,5 @@
 import 'package:phntmxyz_bump_version_sidekick_plugin/phntmxyz_bump_version_sidekick_plugin.dart';
-import 'package:pubspec_manager/pubspec_manager.dart';
-import 'package:sidekick_core/sidekick_core.dart' hide Version;
+import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
@@ -26,7 +25,7 @@ dependencies:
             final versionRegex = RegExp(r'my_package: \^(.+)');
             final update = readme.readAsStringSync().replaceFirst(
                   versionRegex,
-                  'my_package: ^${newVersion.semVersion.canonicalizedVersion}',
+                  'my_package: ^${newVersion.canonicalizedVersion}',
                 );
             readme.writeAsStringSync(update);
           }),
@@ -61,7 +60,7 @@ dependencies:
             final versionRegex = RegExp(r'my_package: \^(.+)');
             final update = readme.readAsStringSync().replaceFirst(
                   versionRegex,
-                  'my_package: ^${newVersion.semVersion.canonicalizedVersion}',
+                  'my_package: ^${newVersion.canonicalizedVersion}',
                 );
             readme.writeAsStringSync(update);
           }),
@@ -99,8 +98,8 @@ dependencies:
       );
       await runner.run(['bump-version', '--minor']);
 
-      expect(oldVersion.toString(), '1.2.3');
-      expect(newVersion.toString(), '1.3.0');
+      expect(oldVersion, Version(1, 2, 3));
+      expect(newVersion, Version(1, 3, 0));
     });
   });
 }

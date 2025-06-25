@@ -1,5 +1,5 @@
-import 'package:pubspec_manager/pubspec_manager.dart';
-import 'package:sidekick_core/sidekick_core.dart' hide Version;
+import 'package:pubspec_manager/pubspec_manager.dart' hide Version;
+import 'package:sidekick_core/sidekick_core.dart';
 import 'package:yaml_edit/yaml_edit.dart';
 
 /// Sets the version in the pubspec.yaml file
@@ -19,5 +19,5 @@ Version? readPubspecVersion(File pubspecFile) {
   if (pmVersion.isMissing || pmVersion.isEmpty) {
     return null;
   }
-  return pmVersion;
+  return pmVersion.semVersion;
 }

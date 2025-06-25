@@ -1,8 +1,7 @@
 import 'dart:async';
 
 import 'package:phntmxyz_bump_version_sidekick_plugin/phntmxyz_bump_version_sidekick_plugin.dart';
-import 'package:pubspec_manager/pubspec_manager.dart';
-import 'package:sidekick_core/sidekick_core.dart' hide Version;
+import 'package:sidekick_core/sidekick_core.dart';
 
 class BumpVersionCommand extends Command {
   @override
