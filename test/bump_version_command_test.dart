@@ -45,7 +45,9 @@ void main() {
       runner.addCommand(BumpVersionCommand());
       await runner.run(['bump-version', '--major']);
       expect(
-        pubspec_manager.PubSpec.loadFromPath(dir.file('pubspec.yaml').path).version.toString(),
+        pubspec_manager.PubSpec.loadFromPath(dir.file('pubspec.yaml').path)
+            .version
+            .toString(),
         '2.0.0',
       );
     });
@@ -60,7 +62,9 @@ void main() {
       runner.addCommand(BumpVersionCommand());
       await runner.run(['bump-version', '--minor']);
       expect(
-        pubspec_manager.PubSpec.loadFromPath(dir.file('pubspec.yaml').path).version.toString(),
+        pubspec_manager.PubSpec.loadFromPath(dir.file('pubspec.yaml').path)
+            .version
+            .toString(),
         '1.3.0',
       );
     });
@@ -75,7 +79,9 @@ void main() {
       runner.addCommand(BumpVersionCommand());
       await runner.run(['bump-version', '--patch']);
       expect(
-        pubspec_manager.PubSpec.loadFromPath(dir.file('pubspec.yaml').path).version.toString(),
+        pubspec_manager.PubSpec.loadFromPath(dir.file('pubspec.yaml').path)
+            .version
+            .toString(),
         '1.2.4',
       );
     });
@@ -96,8 +102,10 @@ void main() {
         runner.addCommand(BumpVersionCommand());
         await runner.run(['bump-version', '--major', '--commit']);
 
-        final lastCommitMessage =
-            'git -C ${dir.path} show -s --format=%s'.start(progress: Progress.capture(), nothrow: true).lines.first;
+        final lastCommitMessage = 'git -C ${dir.path} show -s --format=%s'
+            .start(progress: Progress.capture(), nothrow: true)
+            .lines
+            .first;
         expect(lastCommitMessage, contains('Bump version to 2.0.0'));
         expect(
           dir.file('pubspec.yaml').readAsStringSync(),
@@ -155,16 +163,20 @@ void main() {
         _gitCommit(dir);
 
         // `BumpVersionCommand` calls `git commit` which needs this committer information, else it throws
-        'git config user.email "sidekick-ci@phntm.xyz"'.start(workingDirectory: dir.path);
-        'git config user.name "Sidekick Test CI"'.start(workingDirectory: dir.path);
+        'git config user.email "sidekick-ci@phntm.xyz"'
+            .start(workingDirectory: dir.path);
+        'git config user.name "Sidekick Test CI"'
+            .start(workingDirectory: dir.path);
         final runner = initializeSidekick(
           dartSdkPath: fakeDartSdk().path,
         );
         runner.addCommand(BumpVersionCommand());
         await runner.run(['bump-version', '--major', '--commit']);
 
-        final lastCommitMessage =
-            'git -C ${dir.path} show -s --format=%s'.start(progress: Progress.capture(), nothrow: true).lines.first;
+        final lastCommitMessage = 'git -C ${dir.path} show -s --format=%s'
+            .start(progress: Progress.capture(), nothrow: true)
+            .lines
+            .first;
         expect(lastCommitMessage, contains('Bump version to 2.0.0'));
       });
     });
@@ -173,8 +185,10 @@ void main() {
 
 void _gitCommit(Directory workingDirectory) {
   // Set git configuration for this test to avoid CI failures
-  'git config user.email "sidekick-ci@phntm.xyz"'.start(workingDirectory: workingDirectory.path);
-  'git config user.name "Sidekick Test CI"'.start(workingDirectory: workingDirectory.path);
+  'git config user.email "sidekick-ci@phntm.xyz"'
+      .start(workingDirectory: workingDirectory.path);
+  'git config user.name "Sidekick Test CI"'
+      .start(workingDirectory: workingDirectory.path);
 
   'git commit -m "initial"'.start(workingDirectory: workingDirectory.path);
 }
