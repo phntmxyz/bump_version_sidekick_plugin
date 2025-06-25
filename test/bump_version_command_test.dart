@@ -1,5 +1,5 @@
 import 'package:phntmxyz_bump_version_sidekick_plugin/phntmxyz_bump_version_sidekick_plugin.dart';
-import 'package:pubspec_manager/pubspec_manager.dart';
+import 'package:pubspec_manager/pubspec_manager.dart' hide Version;
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
@@ -45,8 +45,8 @@ void main() {
       runner.addCommand(BumpVersionCommand());
       await runner.run(['bump-version', '--major']);
       expect(
-        PubSpec.loadFromPath(dir.file('pubspec.yaml').path).version.toString(),
-        '2.0.0',
+        PubSpec.loadFromPath(dir.file('pubspec.yaml').path).version.semVersion,
+        Version(2, 0, 0),
       );
     });
   });
@@ -60,8 +60,8 @@ void main() {
       runner.addCommand(BumpVersionCommand());
       await runner.run(['bump-version', '--minor']);
       expect(
-        PubSpec.loadFromPath(dir.file('pubspec.yaml').path).version.toString(),
-        '1.3.0',
+        PubSpec.loadFromPath(dir.file('pubspec.yaml').path).version.semVersion,
+        Version(1, 3, 0),
       );
     });
   });
@@ -75,8 +75,8 @@ void main() {
       runner.addCommand(BumpVersionCommand());
       await runner.run(['bump-version', '--patch']);
       expect(
-        PubSpec.loadFromPath(dir.file('pubspec.yaml').path).version.toString(),
-        '1.2.4',
+        PubSpec.loadFromPath(dir.file('pubspec.yaml').path).version.semVersion,
+        Version(1, 2, 4),
       );
     });
   });
