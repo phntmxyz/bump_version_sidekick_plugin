@@ -17,4 +17,4 @@ jobs:
       - uses: actions/checkout@v1
       - name: check formatting
         run: |
-          dart format --fix --output none --set-exit-if-changed .
+          dart format --output none --set-exit-if-changed .
