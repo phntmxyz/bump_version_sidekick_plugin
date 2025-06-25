@@ -2,8 +2,7 @@ name: Dart Analyzer
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
 
 jobs:
@@ -14,8 +13,10 @@ jobs:
       image: dart:3.8.1
 
     steps:
-      - uses: actions/checkout@v1
-      - name: Install dependencies
+      - uses: actions/checkout@v4    
+
+      - name: Install pub packages
         run: dart pub get
+
       - name: lint
         run: dart analyze --fatal-infos .
