@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.0
+- Added `pubspec_manager` as dependency
+- Update to Dart 3.5
+- Update to `sidekick_core` 3.0.0
+
 ## 1.2.1
 - Fix `oldVersion` parameter of modifications
 
