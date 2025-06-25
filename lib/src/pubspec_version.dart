@@ -1,6 +1,5 @@
-import 'package:sidekick_core/sidekick_core.dart';
-// ignore: depend_on_referenced_packages
-import 'package:yaml/yaml.dart';
+import 'package:pubspec_manager/pubspec_manager.dart';
+import 'package:sidekick_core/sidekick_core.dart' hide Version;
 import 'package:yaml_edit/yaml_edit.dart';
 
 /// Sets the version in the pubspec.yaml file
@@ -15,11 +14,10 @@ Version? readPubspecVersion(File pubspecFile) {
   if (!pubspecFile.existsSync()) {
     error('pubspec.yaml not found at ${pubspecFile.absolute.path}');
   }
-  final pubspecContents = pubspecFile.readAsStringSync();
-  final yaml = loadYaml(pubspecContents) as Map;
-  final versionString = yaml['version'] as String?;
-  if (versionString == null) {
+  final pubSpec = PubSpec.loadFromPath(pubspecFile.absolute.path);
+  final pmVersion = pubSpec.version;
+  if (pmVersion.isMissing || pmVersion.isEmpty) {
     return null;
   }
-  return Version.parse(versionString);
+  return pmVersion;
 }

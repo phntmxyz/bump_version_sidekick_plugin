@@ -1,4 +1,5 @@
-import 'package:sidekick_core/sidekick_core.dart';
+import 'dart:io';
+import 'package:pubspec_manager/pubspec_manager.dart';
 
 extension BumpVersion on Version {
   /// Returns a bumped [Version], major, minor or patch
@@ -6,26 +7,59 @@ extension BumpVersion on Version {
   /// Always strips the pre-release identifiers.
   /// If the build information contains a single number, it is incremented.
   Version bumpVersion(VersionBumpType bumpType) {
-    Version newVersion = () {
+    final currentSemVersion = semVersion;
+
+    final newSemVersion = () {
       switch (bumpType) {
         case VersionBumpType.major:
-          return nextMajor;
+          return currentSemVersion.nextMajor;
         case VersionBumpType.minor:
-          return nextMinor;
+          return currentSemVersion.nextMinor;
         case VersionBumpType.patch:
-          return nextPatch;
+          return currentSemVersion.nextPatch;
       }
     }();
 
     // bump of build information is only safe when it contains a single number,
     // otherwise we don't know its incrementation schema and we leave it as is
-    if (build.whereType<int>().length == 1) {
-      final newBuild = build.map((e) => e is int ? e + 1 : e).join('.');
-      newVersion = newVersion.copyWith(build: newBuild);
-    } else {
-      newVersion =
-          newVersion.copyWith(build: build.isNotEmpty ? build.join('.') : null);
-    }
+    final newVersionString = () {
+      if (currentSemVersion.build.whereType<int>().length == 1) {
+        final newBuild =
+            currentSemVersion.build.map((e) => e is int ? e + 1 : e).join('.');
+        final major = newSemVersion.major;
+        final minor = newSemVersion.minor;
+        final patch = newSemVersion.patch;
+        final preRelease = newSemVersion.preRelease.isNotEmpty
+            ? newSemVersion.preRelease.join('.')
+            : null;
+
+        var versionStr = '$major.$minor.$patch';
+        if (preRelease != null) versionStr += '-$preRelease';
+        return versionStr += '+$newBuild';
+      } else {
+        final build = currentSemVersion.build.isNotEmpty
+            ? currentSemVersion.build.join('.')
+            : null;
+        var versionStr = newSemVersion.toString();
+        if (build != null && !versionStr.contains('+')) {
+          versionStr += '+$build';
+        }
+        return versionStr;
+      }
+    }();
+
+    // Create a new Version by creating a temporary file
+    // This is necessary because pubspec_manager is designed to work with files
+    final tempDir = Directory.systemTemp.createTempSync('version_bump');
+    final pubspecFile = File('${tempDir.path}/pubspec.yaml');
+    final yamlContent = 'name: temp\nversion: $newVersionString';
+    pubspecFile.writeAsStringSync(yamlContent);
+
+    final pubspec = PubSpec.loadFromPath(pubspecFile.path);
+    final newVersion = pubspec.version;
+
+    // Clean up
+    tempDir.deleteSync(recursive: true);
 
     return newVersion;
   }
@@ -36,43 +70,4 @@ enum VersionBumpType {
   major,
   minor,
   patch,
-}
-
-extension on Version {
-  /// Creates a copy of [Version], optionally changing [preRelease] and [build]
-  Version Function({String? preRelease, String? build}) get copyWith =>
-      _copyWith;
-
-  /// Makes it distinguishable if users used `null` or did not provide any value
-  static const _defaultParameter = Object();
-
-  // copyWith version which handles `null`, as in freezed
-  Version _copyWith({
-    dynamic preRelease = _defaultParameter,
-    dynamic build = _defaultParameter,
-  }) {
-    return Version(
-      major,
-      minor,
-      patch,
-      pre: () {
-        if (preRelease == _defaultParameter) {
-          if (this.preRelease.isEmpty) {
-            return null;
-          }
-          return this.preRelease.join('.');
-        }
-        return preRelease as String?;
-      }(),
-      build: () {
-        if (build == _defaultParameter) {
-          if (this.build.isEmpty) {
-            return null;
-          }
-          return this.build.join('.');
-        }
-        return build as String?;
-      }(),
-    );
-  }
 }

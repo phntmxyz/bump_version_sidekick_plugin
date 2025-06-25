@@ -1,90 +1,139 @@
+import 'dart:io';
 import 'package:phntmxyz_bump_version_sidekick_plugin/src/bump_version.dart';
-import 'package:sidekick_core/sidekick_core.dart';
+import 'package:pubspec_manager/pubspec_manager.dart';
 import 'package:test/test.dart';
 
 void main() {
   test('bump major version', () {
+    final v000 = _createVersion('0.0.0');
+    final v100 = _createVersion('1.0.0');
+    final v200 = _createVersion('2.0.0');
+    final v123build12 = _createVersion('1.2.3+12');
+    final v200build13 = _createVersion('2.0.0+13');
+    final v123pre7 = _createVersion('1.2.3-7');
+
     expect(
-      Version(0, 0, 0).bumpVersion(VersionBumpType.major),
-      Version(1, 0, 0),
+      v000.bumpVersion(VersionBumpType.major).toString(),
+      v100.toString(),
     );
 
     expect(
-      Version(1, 0, 0).bumpVersion(VersionBumpType.major),
-      Version(2, 0, 0),
+      v100.bumpVersion(VersionBumpType.major).toString(),
+      v200.toString(),
     );
 
     expect(
-      Version(1, 2, 3, build: '12').bumpVersion(VersionBumpType.major),
-      Version(2, 0, 0, build: '13'),
+      v123build12.bumpVersion(VersionBumpType.major).toString(),
+      v200build13.toString(),
     );
 
     expect(
-      Version(1, 2, 3, pre: '7').bumpVersion(VersionBumpType.major),
-      Version(2, 0, 0),
+      v123pre7.bumpVersion(VersionBumpType.major).toString(),
+      v200.toString(),
     );
   });
 
   test('bump minor version', () {
+    final v000 = _createVersion('0.0.0');
+    final v010 = _createVersion('0.1.0');
+    final v100 = _createVersion('1.0.0');
+    final v110 = _createVersion('1.1.0');
+    final v123build12 = _createVersion('1.2.3+12');
+    final v130build13 = _createVersion('1.3.0+13');
+    final v123pre7 = _createVersion('1.2.3-7');
+    final v130 = _createVersion('1.3.0');
+
     expect(
-      Version(0, 0, 0).bumpVersion(VersionBumpType.minor),
-      Version(0, 1, 0),
+      v000.bumpVersion(VersionBumpType.minor).toString(),
+      v010.toString(),
     );
 
     expect(
-      Version(1, 0, 0).bumpVersion(VersionBumpType.minor),
-      Version(1, 1, 0),
+      v100.bumpVersion(VersionBumpType.minor).toString(),
+      v110.toString(),
     );
 
     expect(
-      Version(1, 2, 3, build: '12').bumpVersion(VersionBumpType.minor),
-      Version(1, 3, 0, build: '13'),
+      v123build12.bumpVersion(VersionBumpType.minor).toString(),
+      v130build13.toString(),
     );
 
     expect(
-      Version(1, 2, 3, pre: '7').bumpVersion(VersionBumpType.minor),
-      Version(1, 3, 0),
+      v123pre7.bumpVersion(VersionBumpType.minor).toString(),
+      v130.toString(),
     );
   });
 
   test('bump patch version', () {
+    final v000 = _createVersion('0.0.0');
+    final v001 = _createVersion('0.0.1');
+    final v100 = _createVersion('1.0.0');
+    final v101 = _createVersion('1.0.1');
+    final v123build12 = _createVersion('1.2.3+12');
+    final v124build13 = _createVersion('1.2.4+13');
+    final v123pre7 = _createVersion('1.2.3-7');
+    final v123 = _createVersion('1.2.3');
+
     expect(
-      Version(0, 0, 0).bumpVersion(VersionBumpType.patch),
-      Version(0, 0, 1),
+      v000.bumpVersion(VersionBumpType.patch).toString(),
+      v001.toString(),
     );
 
     expect(
-      Version(1, 0, 0).bumpVersion(VersionBumpType.patch),
-      Version(1, 0, 1),
+      v100.bumpVersion(VersionBumpType.patch).toString(),
+      v101.toString(),
     );
 
     expect(
-      Version(1, 2, 3, build: '12').bumpVersion(VersionBumpType.patch),
-      Version(1, 2, 4, build: '13'),
+      v123build12.bumpVersion(VersionBumpType.patch).toString(),
+      v124build13.toString(),
     );
 
     expect(
-      Version(1, 2, 3, pre: '7').bumpVersion(VersionBumpType.patch),
+      v123pre7.bumpVersion(VersionBumpType.patch).toString(),
       // yup, that's correct. It just strips the pre-release suffix
-      Version(1, 2, 3),
+      v123.toString(),
     );
   });
 
   test('bump build number only when it is safe', () {
+    final v123build2 = _createVersion('1.2.3+2');
+    final v124build3 = _createVersion('1.2.4+3');
+    final v123buildFoo42Bar = _createVersion('1.2.3+foo.42.bar');
+    final v124buildFoo43Bar = _createVersion('1.2.4+foo.43.bar');
+    final v123buildFoo198989Bar = _createVersion('1.2.3+foo.19.89.bar');
+    final v124buildFoo198989Bar = _createVersion('1.2.4+foo.19.89.bar');
+
     expect(
-      Version(1, 2, 3, build: '2').bumpVersion(VersionBumpType.patch),
-      Version(1, 2, 4, build: '3'),
+      v123build2.bumpVersion(VersionBumpType.patch).toString(),
+      v124build3.toString(),
     );
 
     expect(
-      Version(1, 2, 3, build: 'foo.42.bar').bumpVersion(VersionBumpType.patch),
-      Version(1, 2, 4, build: 'foo.43.bar'),
+      v123buildFoo42Bar.bumpVersion(VersionBumpType.patch).toString(),
+      v124buildFoo43Bar.toString(),
     );
 
     expect(
-      Version(1, 2, 3, build: 'foo.19.89.bar')
-          .bumpVersion(VersionBumpType.patch),
-      Version(1, 2, 4, build: 'foo.19.89.bar'),
+      v123buildFoo198989Bar.bumpVersion(VersionBumpType.patch).toString(),
+      v124buildFoo198989Bar.toString(),
     );
   });
+}
+
+/// Helper function to create a Version from a version string
+Version _createVersion(String versionString) {
+  // Create a temporary pubspec file since pubspec_manager works with files
+  final tempDir = Directory.systemTemp.createTempSync('version_test');
+  final pubspecFile = File('${tempDir.path}/pubspec.yaml');
+  final yamlContent = 'name: test\nversion: $versionString';
+  pubspecFile.writeAsStringSync(yamlContent);
+
+  final pubspec = PubSpec.loadFromPath(pubspecFile.path);
+  final version = pubspec.version;
+
+  // Clean up
+  tempDir.deleteSync(recursive: true);
+
+  return version;
 }
