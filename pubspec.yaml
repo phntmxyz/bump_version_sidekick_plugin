@@ -12,7 +12,7 @@ environment:
   sdk: '>=3.5.0 <4.0.0'
 
 dependencies:
-  pubspec_manager: ^1.0.2
+  pubspec_manager: ^3.0.0
   sidekick_core: ^3.0.0
   yaml_edit: ^2.1.0
 
