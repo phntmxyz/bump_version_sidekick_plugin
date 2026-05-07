@@ -1,4 +1,6 @@
 # Changelog
+## 2.0.1
+- Update to `pubspec_manager` 3.0.0
 
 ## 2.0.0
 - Added `pubspec_manager` as dependency
